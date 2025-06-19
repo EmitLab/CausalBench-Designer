@@ -1,0 +1,125 @@
+<div class="sidebar">
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button class="btn btn-primary" (click)="onAddDataset()">Add Dataset</button>
+    <button class="btn btn-primary" (click)="onAddModel()">Add Model</button>
+    <button class="btn btn-primary" (click)="onAddMetric()">Add Metric</button>
+    <button class="btn btn-danger" (click)="onRemoveItem()">Remove Item</button>
+    <button class="btn btn-success" (click)="onExportContext()">Export Context</button>
+  </div>
+
+  <!-- Query and Information Section -->
+  <div class="query-section" *ngIf="currentItem">
+    <h3>Query and Information</h3>
+    
+    <!-- ID Selection -->
+    <div class="form-group">
+      <label>{{ selectedType === 'dataset' ? 'Dataset ID:' : selectedType === 'model' ? 'Model ID:' : selectedType === 'metric' ? 'Metric ID:' : 'ID:' }}</label>
+      <select 
+        class="form-control" 
+        [(ngModel)]="selectedId" 
+        (change)="onIdSelect()"
+        [disabled]="!selectedType">
+        <option value="">Select ID</option>
+        <option 
+          *ngFor="let id of selectedType === 'dataset' ? datasetIds : selectedType === 'model' ? modelIds : selectedType === 'metric' ? metricIds : []" 
+          [value]="id">
+          {{ id }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Version Selection -->
+    <div class="form-group">
+      <label>Version:</label>
+      <select 
+        class="form-control" 
+        [(ngModel)]="selectedVersion" 
+        (change)="onVersionSelect()"
+        [disabled]="!selectedId">
+        <option value="">Select Version</option>
+        <option 
+          *ngFor="let version of versions" 
+          [value]="version">
+          {{ version }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Information Fields -->
+    <div class="info-fields">
+      <div class="form-group">
+        <label>Name:</label>
+        <input type="text" class="form-control" [value]="itemName" readonly>
+      </div>
+
+      <div class="form-group">
+        <label>Description:</label>
+        <textarea class="form-control" [value]="itemDescription" readonly rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Author:</label>
+        <input type="text" class="form-control" [value]="itemAuthor" readonly>
+      </div>
+
+      <div class="form-group">
+        <label>Visibility:</label>
+        <input type="text" class="form-control" [value]="itemVisibility" readonly>
+      </div>
+
+      <div class="form-group">
+        <label>URL:</label>
+        <input type="text" class="form-control" [value]="itemUrl" readonly>
+      </div>
+
+      <div class="form-group">
+        <label>Timestamp:</label>
+        <input type="text" class="form-control" [value]="itemTimestamp" readonly>
+      </div>
+    </div>
+
+    <!-- Apply Button -->
+    <button 
+      class="btn btn-primary apply-btn" 
+      (click)="onApplyItem()"
+      [disabled]="!selectedId || !selectedVersion">
+      Apply
+    </button>
+  </div>
+
+  <!-- Placeholder when no item is selected -->
+  <div class="placeholder" *ngIf="!currentItem">
+    <p>Select an item to configure</p>
+  </div>
+</div>
+
+<!-- Export Dialog -->
+<div class="modal-overlay" *ngIf="showExportDialog" (click)="hideExport()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h3>Export Context</h3>
+    
+    <div class="form-group">
+      <label>Task Type:</label>
+      <select class="form-control" [(ngModel)]="exportData.taskType">
+        <option value="discovery.temporal">discovery.temporal</option>
+        <option value="discovery.static">discovery.static</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Name:</label>
+      <input type="text" class="form-control" [(ngModel)]="exportData.name">
+    </div>
+
+    <div class="form-group">
+      <label>Description:</label>
+      <input type="text" class="form-control" [(ngModel)]="exportData.description">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" (click)="doExport()">Export</button>
+      <button class="btn btn-danger" (click)="hideExport()">Cancel</button>
+    </div>
+  </div>
+</div> 

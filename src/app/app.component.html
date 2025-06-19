@@ -1,0 +1,55 @@
+<div class="app-container">
+  <!-- Token Input Component -->
+  <app-token-input></app-token-input>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Sidebar -->
+    <app-sidebar
+      [availableDatasets]="availableDatasets"
+      [availableModels]="availableModels"
+      [availableMetrics]="availableMetrics"
+      [currentItem]="currentItem"
+      [currentItemType]="currentItemType"
+      (addDataset)="onAddDataset()"
+      (addModel)="onAddModel()"
+      (addMetric)="onAddMetric()"
+      (removeItem)="onRemoveItem()"
+      (exportContext)="onExportContext()"
+      (applyItem)="onApplyItem($event)">
+    </app-sidebar>
+
+    <!-- Views Container -->
+    <div class="views-container">
+      <!-- Dataset View -->
+      <app-dataset-view
+        [datasets]="datasets"
+        [loading]="loadingDatasets"
+        (itemSelected)="onItemSelected($event)">
+      </app-dataset-view>
+
+      <!-- Model View -->
+      <app-model-view
+        [models]="models"
+        [loading]="loadingModels"
+        (itemSelected)="onItemSelected($event)">
+      </app-model-view>
+
+      <!-- Metric View -->
+      <app-metric-view
+        [metrics]="metrics"
+        [loading]="loadingMetrics"
+        (itemSelected)="onItemSelected($event)">
+      </app-metric-view>
+    </div>
+  </div>
+
+  <!-- Export Dialog -->
+  <app-export-dialog
+    [showDialog]="showExportDialog"
+    [datasets]="datasets"
+    [models]="models"
+    [metrics]="metrics"
+    (closeDialog)="onCloseExportDialog()">
+  </app-export-dialog>
+</div> 
