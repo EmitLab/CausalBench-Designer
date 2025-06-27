@@ -15,10 +15,16 @@ export class SidebarComponent {
   @Input() loadingModels = false;
   @Input() loadingMetrics = false;
   
+  // Current items for duplicate checking
+  @Input() currentDatasets: any[] = [];
+  @Input() currentModels: any[] = [];
+  @Input() currentMetrics: any[] = [];
+  
   @Output() itemSelected = new EventEmitter<any>();
   @Output() addDataset = new EventEmitter<void>();
   @Output() addModel = new EventEmitter<void>();
   @Output() addMetric = new EventEmitter<void>();
+  @Output() addItemWithData = new EventEmitter<any>();
   @Output() removeItem = new EventEmitter<void>();
   @Output() exportContext = new EventEmitter<void>();
   @Output() applyItem = new EventEmitter<any>();
@@ -28,6 +34,11 @@ export class SidebarComponent {
   selectedId = '';
   selectedVersion = '';
   
+  // Search functionality
+  searchQuery = '';
+  showSearchResults = false;
+  searchResults: any[] = [];
+  
   // Information fields
   itemName = '';
   itemDescription = '';
@@ -36,10 +47,15 @@ export class SidebarComponent {
   itemUrl = '';
   itemTimestamp = '';
 
+  // Hyperparameter management
+  availableHyperparameters: any[] = [];
+  hyperparameterSets: any[] = [];
+  showHyperparameterSection = false;
+
   // Dropdown options
-  datasetIds: string[] = [];
-  modelIds: string[] = [];
-  metricIds: string[] = [];
+  datasetOptions: { id: string, name: string }[] = [];
+  modelOptions: { id: string, name: string }[] = [];
+  metricOptions: { id: string, name: string }[] = [];
   versions: string[] = [];
 
   showExportDialog = false;
@@ -61,18 +77,28 @@ export class SidebarComponent {
   }
 
   updateDropdownOptions() {
-    // Extract unique IDs from available data
-    this.datasetIds = this.getUniqueIds(this.availableDatasets, 'dataset_id');
-    this.modelIds = this.getUniqueIds(this.availableModels, 'modl_id');
-    this.metricIds = this.getUniqueIds(this.availableMetrics, 'metric_id');
+    // Extract unique IDs and names from available data
+    this.datasetOptions = this.getUniqueOptions(this.availableDatasets, 'dataset_id', 'dataset_name');
+    this.modelOptions = this.getUniqueOptions(this.availableModels, 'modl_id', 'modl_name');
+    this.metricOptions = this.getUniqueOptions(this.availableMetrics, 'metric_id', 'metric_name');
   }
 
-  getUniqueIds(items: any[], idField: string): string[] {
-    const ids = [...new Set(items.map(item => String(item[idField])))];
-    return ids.sort((a, b) => {
-      const numA = parseInt(a);
-      const numB = parseInt(b);
-      return isNaN(numA) || isNaN(numB) ? a.localeCompare(b) : numA - numB;
+  getUniqueOptions(items: any[], idField: string, nameField: string): { id: string, name: string }[] {
+    const uniqueItems = items.reduce((acc, item) => {
+      const id = String(item[idField]);
+      if (!acc.find((existing: { id: string, name: string }) => existing.id === id)) {
+        acc.push({
+          id,
+          name: item[nameField] || `Item ${id}`
+        });
+      }
+      return acc;
+    }, [] as { id: string, name: string }[]);
+    
+    return uniqueItems.sort((a: { id: string, name: string }, b: { id: string, name: string }) => {
+      const numA = parseInt(a.id);
+      const numB = parseInt(b.id);
+      return isNaN(numA) || isNaN(numB) ? a.name.localeCompare(b.name) : numA - numB;
     });
   }
 
@@ -124,6 +150,11 @@ export class SidebarComponent {
     this.itemVisibility = '';
     this.itemUrl = '';
     this.itemTimestamp = '';
+    
+    // Clear hyperparameter section when switching items
+    this.availableHyperparameters = [];
+    this.hyperparameterSets = [];
+    this.showHyperparameterSection = false;
   }
 
   showPlaceholder() {
@@ -132,6 +163,11 @@ export class SidebarComponent {
     this.selectedVersion = '';
     this.clearInfoFields();
     this.versions = [];
+    
+    // Clear hyperparameter section
+    this.availableHyperparameters = [];
+    this.hyperparameterSets = [];
+    this.showHyperparameterSection = false;
   }
 
   populateDatasetFields(item: any) {
@@ -228,6 +264,9 @@ export class SidebarComponent {
     if (this.versions.length > 0 && !this.selectedVersion) {
       this.selectedVersion = this.versions[0];
     }
+    
+    // Load hyperparameters after versions are updated
+    this.loadHyperparameters();
   }
 
   updateInfo() {
@@ -238,6 +277,121 @@ export class SidebarComponent {
     } else if (this.selectedType === 'metric') {
       this.updateMetricInfo();
     }
+    
+    // Load hyperparameters for models and metrics
+    this.loadHyperparameters();
+  }
+
+  loadHyperparameters() {
+    console.log('loadHyperparameters called');
+    console.log('selectedId:', this.selectedId);
+    console.log('selectedVersion:', this.selectedVersion);
+    console.log('selectedType:', this.selectedType);
+    
+    this.availableHyperparameters = [];
+    this.showHyperparameterSection = false;
+    
+    if (!this.selectedId || !this.selectedVersion) {
+      console.log('Missing selectedId or selectedVersion, returning');
+      return;
+    }
+    
+    if (this.selectedType === 'model') {
+      const model = this.availableModels.find(m => String(m.modl_id) === this.selectedId);
+      console.log('Found model:', model);
+      if (model) {
+        const versionInfo = model.modl_version_info_list.find(
+          (v: any) => String(v.version.version_number) === this.selectedVersion
+        );
+        console.log('Found versionInfo:', versionInfo);
+        if (versionInfo) {
+          // Only check 'hyperparameters' field under version
+          const hyperparameters = versionInfo.version.hyperparameters || [];
+          console.log('Hyperparameters found:', hyperparameters);
+          if (hyperparameters && hyperparameters.length > 0) {
+            console.log('Setting hyperparameters:', hyperparameters);
+            this.availableHyperparameters = hyperparameters;
+            this.showHyperparameterSection = true;
+          }
+        }
+      }
+    } else if (this.selectedType === 'metric') {
+      const metric = this.availableMetrics.find(m => String(m.metric_id) === this.selectedId);
+      console.log('Found metric:', metric);
+      if (metric) {
+        const versionInfo = metric.metric_version_info_list.find(
+          (v: any) => String(v.version.version_number) === this.selectedVersion
+        );
+        console.log('Found versionInfo:', versionInfo);
+        if (versionInfo) {
+          // Only check 'hyperparameters' field under version
+          const hyperparameters = versionInfo.version.hyperparameters || [];
+          console.log('Hyperparameters found:', hyperparameters);
+          if (hyperparameters && hyperparameters.length > 0) {
+            console.log('Setting hyperparameters:', hyperparameters);
+            this.availableHyperparameters = hyperparameters;
+            this.showHyperparameterSection = true;
+          }
+        }
+      }
+    }
+    
+    console.log('showHyperparameterSection:', this.showHyperparameterSection);
+    console.log('availableHyperparameters:', this.availableHyperparameters);
+    console.log('availableHyperparameters structure:', this.availableHyperparameters);
+    
+    // Load existing hyperparameter sets from current item
+    this.loadExistingHyperparameterSets();
+  }
+
+  loadExistingHyperparameterSets() {
+    if (this.currentItem && this.currentItem.data && this.currentItem.data.hyperparameter_sets) {
+      this.hyperparameterSets = [...this.currentItem.data.hyperparameter_sets];
+    } else {
+      this.hyperparameterSets = [];
+    }
+  }
+
+  addHyperparameterSet() {
+    const newSet = {
+      id: Date.now(), // Simple ID generation
+      parameters: {},
+      collapsed: false
+    };
+    this.hyperparameterSets.push(newSet);
+  }
+
+  toggleHyperparameterSetCollapse(setId: number) {
+    const set = this.hyperparameterSets.find(s => s.id === setId);
+    if (set) {
+      set.collapsed = !set.collapsed;
+    }
+  }
+
+  removeHyperparameterSet(setId: number) {
+    this.hyperparameterSets = this.hyperparameterSets.filter(set => set.id !== setId);
+  }
+
+  updateHyperparameterValue(setId: number, parameterName: string, value: string) {
+    const set = this.hyperparameterSets.find(s => s.id === setId);
+    if (set) {
+      set.parameters[parameterName] = value;
+    }
+  }
+
+  onHyperparameterInput(event: Event, setId: number, parameterName: string) {
+    const target = event.target as HTMLInputElement;
+    if (target) {
+      this.updateHyperparameterValue(setId, parameterName, target.value);
+    }
+  }
+
+  isDuplicateHyperparameter(setId: number, parameterName: string, value: string): boolean {
+    return this.hyperparameterSets.some(set => 
+      set.id !== setId && 
+      set.parameters[parameterName] && 
+      set.parameters[parameterName] === value
+    );
   }
 
   updateDatasetInfo() {
@@ -297,7 +451,8 @@ export class SidebarComponent {
         item: this.currentItem,
         type: this.selectedType,
         id: this.selectedId,
-        version: this.selectedVersion
+        version: this.selectedVersion,
+        hyperparameterSets: this.hyperparameterSets
       };
       this.applyItem.emit(applyData);
     }
@@ -334,5 +489,168 @@ export class SidebarComponent {
   doExport() {
     this.exportContext.emit();
     this.hideExport();
+  }
+
+  // Search functionality methods
+  onSearchInput() {
+    if (!this.searchQuery.trim()) {
+      this.showSearchResults = false;
+      this.searchResults = [];
+      return;
+    }
+
+    this.searchResults = this.performSearch(this.searchQuery.trim());
+    this.showSearchResults = this.searchResults.length > 0;
+  }
+
+  performSearch(query: string): any[] {
+    const results: any[] = [];
+    const lowerQuery = query.toLowerCase();
+
+    // Search in datasets
+    this.availableDatasets.forEach(dataset => {
+      if (dataset.dataset_name && dataset.dataset_name.toLowerCase().includes(lowerQuery)) {
+        results.push({
+          type: 'dataset',
+          id: dataset.dataset_id,
+          name: dataset.dataset_name,
+          description: dataset.dataset_version_info_list?.[0]?.dataset?.dataset_description || '',
+          item: dataset
+        });
+      }
+    });
+
+    // Search in models
+    this.availableModels.forEach(model => {
+      if (model.modl_name && model.modl_name.toLowerCase().includes(lowerQuery)) {
+        results.push({
+          type: 'model',
+          id: model.modl_id,
+          name: model.modl_name,
+          description: model.modl_version_info_list?.[0]?.modl?.modl_description || '',
+          item: model
+        });
+      }
+    });
+
+    // Search in metrics
+    this.availableMetrics.forEach(metric => {
+      if (metric.metric_name && metric.metric_name.toLowerCase().includes(lowerQuery)) {
+        results.push({
+          type: 'metric',
+          id: metric.metric_id,
+          name: metric.metric_name,
+          description: metric.metric_version_info_list?.[0]?.metric?.metric_description || '',
+          item: metric
+        });
+      }
+    });
+
+    return results.slice(0, 10); // Limit to 10 results
+  }
+
+  onSearchResultSelect(result: any) {
+    this.searchQuery = result.name;
+    this.showSearchResults = false;
+    
+    // Set the type and ID automatically
+    this.selectedType = result.type;
+    this.selectedId = String(result.id);
+    
+    // Update versions and info
+    this.updateVersions();
+    
+    // Set the first version if available
+    if (this.versions.length > 0) {
+      this.selectedVersion = this.versions[0];
+    }
+    
+    // Update info and load hyperparameters
+    this.updateInfo();
+    
+    // Check for duplicates
+    const selectedVersion = this.versions.length > 0 ? this.versions[0] : '';
+    if (this.isDuplicateItem(result.type, result.id, selectedVersion)) {
+      const itemName = this.getItemName(result.type, result.id);
+      alert(`Cannot add duplicate: ${itemName} (ID: ${result.id}, Version: ${selectedVersion}) already exists.`);
+      return;
+    }
+    
+    // Emit event to add item with pre-selected data
+    this.addItemWithData.emit({
+      type: result.type,
+      item: result.item,
+      selectedId: result.id,
+      selectedVersion: selectedVersion
+    });
+  }
+
+  isDuplicateItem(type: string, id: string, version: string): boolean {
+    let items: any[];
+    
+    if (type === 'dataset') {
+      items = this.currentDatasets;
+    } else if (type === 'model') {
+      items = this.currentModels;
+    } else if (type === 'metric') {
+      items = this.currentMetrics;
+    } else {
+      return false;
+    }
+    
+    return items.some(item => {
+      const itemId = this.getItemId(item, type);
+      const itemVersion = item.data?.selected_version;
+      return itemId === String(id) && itemVersion === version;
+    });
+  }
+
+  getItemId(item: any, type: string): string {
+    if (type === 'dataset') {
+      return String(item.data?.dataset_id);
+    } else if (type === 'model') {
+      return String(item.data?.modl_id);
+    } else if (type === 'metric') {
+      return String(item.data?.metric_id);
+    }
+    return '';
+  }
+
+  getItemName(type: string, id: string): string {
+    if (type === 'dataset') {
+      const dataset = this.availableDatasets.find(d => String(d.dataset_id) === String(id));
+      return dataset?.dataset_name || `Dataset ${id}`;
+    } else if (type === 'model') {
+      const model = this.availableModels.find(m => String(m.modl_id) === String(id));
+      return model?.modl_name || `Model ${id}`;
+    } else if (type === 'metric') {
+      const metric = this.availableMetrics.find(m => String(m.metric_id) === String(id));
+      return metric?.metric_name || `Metric ${id}`;
+    }
+    return `Item ${id}`;
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.showSearchResults = false;
+    this.searchResults = [];
+  }
+
+  resetHyperparameterToDefault(setId: number, paramName: string) {
+    const set = this.hyperparameterSets.find(s => s.id === setId);
+    if (set) {
+      const param = this.availableHyperparameters.find(p => p.hyperparameter_name === paramName);
+      if (param) {
+        set.parameters[paramName] = param.hyperparameter_value;
+      }
+    }
+  }
+
+  getParameterTooltip(param: any): string {
+    let tooltip = param.hyperparameter_description || '';
+    if (param.allowed_values && param.allowed_values.length > 0) {
+      tooltip += `\nAllowed: [${param.allowed_values.join(', ')}]`;
+    }
+    return tooltip;
   }
 } 

@@ -4,6 +4,29 @@
   gap: 10px;
 }
 
+.item {
+  background-color: #f3e5f5;
+  border: 1px solid #ce93d8;
+  border-radius: 4px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.item:hover {
+  background-color: #e1bee7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(156, 39, 176, 0.2);
+}
+
+.item.selected {
+  background-color: #ba68c8;
+  border-color: #9c27b0;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(156, 39, 176, 0.3);
+}
+
 .item-content {
   display: flex;
   flex-direction: column;
@@ -38,4 +61,16 @@
 
 .empty-state p {
   margin: 5px 0;
+}
+
+// Purple theme for dataset view panel
+:host {
+  .view-panel {
+    background-color: #f3e5f5 !important;
+    border-color: #9c27b0 !important;
+  }
+  
+  .title {
+    color: #333 !important;
+  }
 } 

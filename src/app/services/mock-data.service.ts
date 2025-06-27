@@ -196,7 +196,22 @@ export class MockDataService {
             version: {
               modl_version_id: 2,
               version_number: 1,
-              parameters: [],
+              parameters: [
+                {
+                  parameter_id: 1,
+                  parameter_name: "alpha",
+                  parameter_description: "Significance level for independence tests",
+                  hyperparameter_value: "0.05",
+                  parameter_type: "float"
+                },
+                {
+                  parameter_id: 2,
+                  parameter_name: "max_k",
+                  parameter_description: "Maximum size of conditioning set",
+                  hyperparameter_value: "3",
+                  parameter_type: "integer"
+                }
+              ],
               tasks: [
                 {
                   task_id: 2,
@@ -232,7 +247,22 @@ export class MockDataService {
             version: {
               modl_version_id: 5,
               version_number: 1,
-              parameters: [],
+              parameters: [
+                {
+                  parameter_id: 3,
+                  parameter_name: "alpha",
+                  parameter_description: "Significance level for independence tests",
+                  hyperparameter_value: "0.01",
+                  parameter_type: "float"
+                },
+                {
+                  parameter_id: 4,
+                  parameter_name: "max_k",
+                  parameter_description: "Maximum size of conditioning set",
+                  hyperparameter_value: "4",
+                  parameter_type: "integer"
+                }
+              ],
               tasks: [
                 {
                   task_id: 2,
@@ -458,6 +488,22 @@ export class MockDataService {
               version_number: 1,
               input_type: "",
               output_type: "",
+              parameters: [
+                {
+                  parameter_id: 5,
+                  parameter_name: "beta",
+                  parameter_description: "Beta parameter for F1 score calculation",
+                  hyperparameter_value: "1.0",
+                  parameter_type: "float"
+                },
+                {
+                  parameter_id: 6,
+                  parameter_name: "threshold",
+                  parameter_description: "Threshold for positive prediction",
+                  hyperparameter_value: "0.5",
+                  parameter_type: "float"
+                }
+              ],
               tasks: [
                 {
                   task_id: 2,

@@ -4,8 +4,53 @@
     <button class="btn btn-primary" (click)="onAddDataset()">Add Dataset</button>
     <button class="btn btn-primary" (click)="onAddModel()">Add Model</button>
     <button class="btn btn-primary" (click)="onAddMetric()">Add Metric</button>
-    <button class="btn btn-danger" (click)="onRemoveItem()">Remove Item</button>
-    <button class="btn btn-success" (click)="onExportContext()">Export Context</button>
+    <button class="btn btn-danger" (click)="onRemoveItem()">Remove Module</button>
+    <button class="btn btn-success" (click)="onExportContext()">Export Context Template</button>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <h3>Search Items</h3>
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <input 
+          type="text" 
+          class="form-control search-input" 
+          placeholder="Search by item name..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearchInput()"
+          (focus)="onSearchInput()">
+        <button 
+          class="btn btn-clear" 
+          (click)="clearSearch()"
+          *ngIf="searchQuery">
+          ×
+        </button>
+      </div>
+      
+      <!-- Search Results Dropdown -->
+      <div class="search-results" *ngIf="showSearchResults">
+        <div 
+          class="search-result-item" 
+          *ngFor="let result of searchResults"
+          (click)="onSearchResultSelect(result)">
+          <div class="result-header">
+            <span class="result-name">{{ result.name }}</span>
+            <span class="result-type"
+              [ngClass]="{
+                'badge-dataset': result.type === 'dataset',
+                'badge-model': result.type === 'model',
+                'badge-metric': result.type === 'metric'
+              }"
+            >{{ result.type }}</span>
+          </div>
+          <div class="result-description" *ngIf="result.description">
+            {{ result.description }}
+          </div>
+          <div class="result-id">ID: {{ result.id }}</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Query and Information Section -->
@@ -22,9 +67,9 @@
         [disabled]="!selectedType">
         <option value="">Select ID</option>
         <option 
-          *ngFor="let id of selectedType === 'dataset' ? datasetIds : selectedType === 'model' ? modelIds : selectedType === 'metric' ? metricIds : []" 
-          [value]="id">
-          {{ id }}
+          *ngFor="let option of selectedType === 'dataset' ? datasetOptions : selectedType === 'model' ? modelOptions : selectedType === 'metric' ? metricOptions : []" 
+          [value]="option.id">
+          {{ option.id }} - {{ option.name }}
         </option>
       </select>
     </div>
@@ -76,6 +121,60 @@
       <div class="form-group">
         <label>Timestamp:</label>
         <input type="text" class="form-control" [value]="itemTimestamp" readonly>
+      </div>
+    </div>
+
+    <!-- Hyperparameter Section -->
+    <div class="hyperparameter-section" *ngIf="showHyperparameterSection">
+      <h4>Hyperparameter Configuration</h4>
+      <p class="hyperparameter-info">Available parameters: {{ availableHyperparameters.length }}</p>
+      
+      <!-- Hyperparameter Sets -->
+      <div class="parameter-sets">
+        <div class="set-header">
+          <h5>Hyperparameter Sets</h5>
+          <button class="btn btn-sm btn-primary" (click)="addHyperparameterSet()">Add Set</button>
+        </div>
+        
+        <div class="parameter-set" *ngFor="let set of hyperparameterSets; let i = index">
+          <div class="set-header">
+            <h6>Set {{ i + 1 }}</h6>
+            <div>
+              <button class="btn btn-sm btn-secondary" (click)="toggleHyperparameterSetCollapse(set.id)">
+                <span *ngIf="!set.collapsed">&#9660; Collapse</span>
+                <span *ngIf="set.collapsed">&#9654; Expand</span>
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="removeHyperparameterSet(set.id)">Remove</button>
+            </div>
+          </div>
+          <div class="parameter-inputs" *ngIf="!set.collapsed">
+            <div class="form-group" *ngFor="let param of availableHyperparameters">
+              <label class="parameter-name" [title]="getParameterTooltip(param)"><b>{{ param.hyperparameter_name }}</b>
+                <span *ngIf="param.allowed_values && param.allowed_values.length > 0" class="allowed-values">
+                  [{{ param.allowed_values.join(', ') }}]
+                </span>
+              </label>
+              <div class="input-reset-wrapper">
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  [placeholder]="param.hyperparameter_value"
+                  [value]="set.parameters[param.hyperparameter_name] || ''"
+                  (input)="onHyperparameterInput($event, set.id, param.hyperparameter_name)"
+                  [class.duplicate]="isDuplicateHyperparameter(set.id, param.hyperparameter_name, set.parameters[param.hyperparameter_name])"
+                >
+                <button class="btn btn-xs btn-reset" type="button" (click)="resetHyperparameterToDefault(set.id, param.hyperparameter_name)" title="Reset to default">
+                  &#8635;
+                </button>
+              </div>
+              <small class="form-text text-muted">{{ param.hyperparameter_description }}</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="no-sets" *ngIf="hyperparameterSets.length === 0">
+          <p>No hyperparameter sets defined. Click "Add Set" to create one.</p>
+        </div>
       </div>
     </div>
 
