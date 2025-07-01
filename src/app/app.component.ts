@@ -15,6 +15,7 @@ export class AppComponent implements OnInit {
   metrics: any[] = [];
   currentItem: any = null;
   currentItemType: 'dataset' | 'model' | 'metric' | null = null;
+  selectedTaskType: string = '';
 
   // Available items from API (for selection)
   availableDatasets: any[] = [];
@@ -349,5 +350,9 @@ export class AppComponent implements OnInit {
       return metric?.metric_name || `Metric ${id}`;
     }
     return `Item ${id}`;
+  }
+
+  onTaskTypeChange(taskType: string) {
+    this.selectedTaskType = taskType;
   }
 } 

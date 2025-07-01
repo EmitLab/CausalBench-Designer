@@ -6,19 +6,10 @@
     </div>
 
     <div class="dialog-content">
-      <!-- Task Type dropdown -->
+      <!-- Task Type display -->
       <div class="form-group">
-        <label for="taskType">Task Type:</label>
-        <select 
-          id="taskType"
-          class="form-control" 
-          [(ngModel)]="taskType">
-          <option 
-            *ngFor="let option of taskTypeOptions" 
-            [value]="option">
-            {{ option }}
-          </option>
-        </select>
+        <label>Task Type:</label>
+        <div class="task-type-display">{{ selectedTaskType }}</div>
       </div>
 
       <!-- Name field -->

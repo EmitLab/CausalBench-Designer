@@ -1,6 +1,6 @@
 <div class="title-bar">
   <img src="assets/logo.png" alt="Logo" class="logo">
-  <span class="app-title">CausalBench Designer v1.0b</span>
+  <span class="app-title">CausalBench Designer v1.0c</span>
   <div class="title-bar-actions">
     <button class="help-btn" (click)="showHelp = true">Help</button>
     <a class="help-btn" href="https://docs.causalbench.org" target="_blank" rel="noopener noreferrer">Documentation</a>
@@ -13,7 +13,7 @@
     <h3>About</h3>
     <div class="help-content">
       <p><b>CausalBench Designer</b> is a context design tool for CausalBench.</p>
-      <p>Version 1.0b</p>
+      <p>Version 1.0c</p>
       <p>Visit <a href="https://causalbench.org" target="_blank">causalbench.org</a> for more information.</p>
     </div>
     <button class="btn btn-primary" (click)="showAbout = false">Close</button>
@@ -63,26 +63,18 @@
 
     <!-- Views Container -->
     <div class="views-container">
-      <!-- Dataset View -->
-      <app-dataset-view
+      <app-context-view
         [datasets]="datasets"
-        [loading]="loadingDatasets"
-        (itemSelected)="onItemSelected($event)">
-      </app-dataset-view>
-
-      <!-- Model View -->
-      <app-model-view
         [models]="models"
-        [loading]="loadingModels"
-        (itemSelected)="onItemSelected($event)">
-      </app-model-view>
-
-      <!-- Metric View -->
-      <app-metric-view
         [metrics]="metrics"
-        [loading]="loadingMetrics"
-        (itemSelected)="onItemSelected($event)">
-      </app-metric-view>
+        [loadingDatasets]="loadingDatasets"
+        [loadingModels]="loadingModels"
+        [loadingMetrics]="loadingMetrics"
+        (itemSelected)="onItemSelected($event)"
+        (addModel)="onAddModel()"
+        (addMetric)="onAddMetric()"
+        (taskTypeChange)="onTaskTypeChange($event)">
+      </app-context-view>
     </div>
   </div>
 
@@ -92,6 +84,7 @@
     [datasets]="datasets"
     [models]="models"
     [metrics]="metrics"
+    [selectedTaskType]="selectedTaskType"
     (closeDialog)="onCloseExportDialog()">
   </app-export-dialog>
 </div> 

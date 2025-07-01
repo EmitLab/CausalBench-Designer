@@ -42,6 +42,8 @@
   flex-direction: column;
   gap: 10px;
   margin-bottom: 20px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 15px;
 }
 
 // Search Section Styles
@@ -296,8 +298,8 @@
 }
 
 .query-section {
-  border-top: 1px solid #ccc;
-  padding-top: 15px;
+  // border-top: 1px solid #ccc;
+  // padding-top: 15px;
 }
 
 .query-section h3 {

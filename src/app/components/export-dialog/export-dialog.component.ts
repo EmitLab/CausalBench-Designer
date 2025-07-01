@@ -10,16 +10,13 @@ export class ExportDialogComponent {
   @Input() datasets: any[] = [];
   @Input() models: any[] = [];
   @Input() metrics: any[] = [];
+  @Input() selectedTaskType = 'discovery.temporal';
   
   @Output() closeDialog = new EventEmitter<void>();
 
   // Form fields
-  taskType = 'discovery.temporal';
   name = '';
   description = '';
-
-  // Task type options
-  taskTypeOptions = ['discovery.temporal', 'discovery.static'];
 
   // Computed properties for summary
   get configuredDatasetsCount(): number {
@@ -27,15 +24,73 @@ export class ExportDialogComponent {
   }
 
   get configuredModelsCount(): number {
-    return this.models.filter(m => m.data && m.data.modl_id && m.data.selected_version).length;
+    return this.getFilteredModels().length;
   }
 
   get configuredMetricsCount(): number {
-    return this.metrics.filter(met => met.data && met.data.metric_id && met.data.selected_version).length;
+    return this.getFilteredMetrics().length;
   }
 
   onClose() {
     this.closeDialog.emit();
+  }
+
+  private getFilteredModels() {
+    return this.models.filter(model => {
+      // First check if it's a configured model
+      if (!model.data || !model.data.modl_id || !model.data.selected_version) {
+        return false;
+      }
+
+      // Show new models that don't have version info yet
+      if (!model.data.modl_version_info_list) {
+        return true;
+      }
+
+      // Check for tasks in version info list
+      const versionInfo = model.data.modl_version_info_list.find(
+        (v: any) => String(v.version.version_number) === model.data.selected_version
+      );
+
+      if (versionInfo?.version?.tasks) {
+        return versionInfo.version.tasks.some((task: any) => 
+          task.task_name === this.selectedTaskType
+        );
+      }
+
+      // Fallback to checking direct version tasks
+      const tasks = model.data?.version?.tasks || [];
+      return tasks.some((task: any) => task.task_name === this.selectedTaskType);
+    });
+  }
+
+  private getFilteredMetrics() {
+    return this.metrics.filter(metric => {
+      // First check if it's a configured metric
+      if (!metric.data || !metric.data.metric_id || !metric.data.selected_version) {
+        return false;
+      }
+
+      // Show new metrics that don't have version info yet
+      if (!metric.data.metric_version_info_list) {
+        return true;
+      }
+
+      // Check for tasks in version info list
+      const versionInfo = metric.data.metric_version_info_list.find(
+        (v: any) => String(v.version.version_number) === metric.data.selected_version
+      );
+
+      if (versionInfo?.version?.tasks) {
+        return versionInfo.version.tasks.some((task: any) => 
+          task.task_name === this.selectedTaskType
+        );
+      }
+
+      // Fallback to checking direct version tasks
+      const tasks = metric.data?.version?.tasks || [];
+      return tasks.some((task: any) => task.task_name === this.selectedTaskType);
+    });
   }
 
   onExport() {
@@ -44,7 +99,7 @@ export class ExportDialogComponent {
     const allModels = [];
     const allMetrics = [];
 
-    // Get all datasets
+    // Get all datasets (datasets are global)
     for (const item of this.datasets) {
       if (item.data && item.data.dataset_id && item.data.selected_version) {
         allDatasets.push({
@@ -54,24 +109,20 @@ export class ExportDialogComponent {
       }
     }
 
-    // Get all models
-    for (const item of this.models) {
-      if (item.data && item.data.modl_id && item.data.selected_version) {
-        allModels.push({
-          id: item.data.modl_id,
-          version: item.data.selected_version
-        });
-      }
+    // Get filtered models
+    for (const item of this.getFilteredModels()) {
+      allModels.push({
+        id: item.data.modl_id,
+        version: item.data.selected_version
+      });
     }
 
-    // Get all metrics
-    for (const item of this.metrics) {
-      if (item.data && item.data.metric_id && item.data.selected_version) {
-        allMetrics.push({
-          id: item.data.metric_id,
-          version: item.data.selected_version
-        });
-      }
+    // Get filtered metrics
+    for (const item of this.getFilteredMetrics()) {
+      allMetrics.push({
+        id: item.data.metric_id,
+        version: item.data.selected_version
+      });
     }
 
     // Format the output
@@ -82,7 +133,7 @@ from causalbench.modules.dataset import Dataset
 from causalbench.modules.model import Model
 from causalbench.modules.metric import Metric
 
-context1: Context = Context.create(task='${this.taskType}',
+context1: Context = Context.create(task='${this.selectedTaskType}',
    name='${this.name}',
    description='${this.description}',
    datasets=[

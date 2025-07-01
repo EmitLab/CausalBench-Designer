@@ -1,0 +1,28 @@
+<div class="context-header-bar">
+  <label for="taskTypeDropdown">Task Type:</label>
+  <select id="taskTypeDropdown" 
+          [(ngModel)]="selectedTaskType" 
+          (change)="onTaskTypeChange($event)"
+          [disabled]="loadingTasks"
+          class="task-type-dropdown">
+    <option value="" disabled>{{ loadingTasks ? 'Loading tasks...' : 'Please select a task:' }}</option>
+    <option *ngFor="let taskId of tasks" [value]="taskId">{{ taskId }}</option>
+  </select>
+</div>
+<div class="context-views-row">
+  <app-dataset-view
+    [datasets]="datasets"
+    [loading]="loadingDatasets"
+    (itemSelected)="itemSelected.emit($event)">
+  </app-dataset-view>
+  <app-model-view
+    [models]="filteredModels"
+    [loading]="loadingModels"
+    (itemSelected)="itemSelected.emit($event)">
+  </app-model-view>
+  <app-metric-view
+    [metrics]="filteredMetrics"
+    [loading]="loadingMetrics"
+    (itemSelected)="itemSelected.emit($event)">
+  </app-metric-view>
+</div> 
