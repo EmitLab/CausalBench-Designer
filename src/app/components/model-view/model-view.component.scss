@@ -4,6 +4,29 @@
   gap: 10px;
 }
 
+.item {
+  background-color: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 4px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.item:hover {
+  background-color: #bbdefb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+.item.selected {
+  background-color: #64b5f6;
+  border-color: #2196f3;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+}
+
 .item-content {
   display: flex;
   flex-direction: column;
@@ -38,4 +61,16 @@
 
 .empty-state p {
   margin: 5px 0;
+}
+
+// Blue theme for model view panel
+:host {
+  .view-panel {
+    background-color: #e3f2fd !important;
+    border-color: #2196f3 !important;
+  }
+  
+  .title {
+    color: #333 !important;
+  }
 } 

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 import { AppComponent } from './app.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
@@ -13,6 +14,7 @@ import { ModelItemComponent } from './components/model-item/model-item.component
 import { MetricItemComponent } from './components/metric-item/metric-item.component';
 import { ExportDialogComponent } from './components/export-dialog/export-dialog.component';
 import { TokenInputComponent } from './components/token-input/token-input.component';
+import { ContextViewComponent } from './components/context-view/context-view.component';
 
 @NgModule({
   declarations: [
@@ -25,12 +27,14 @@ import { TokenInputComponent } from './components/token-input/token-input.compon
     ModelItemComponent,
     MetricItemComponent,
     ExportDialogComponent,
-    TokenInputComponent
+    TokenInputComponent,
+    ContextViewComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
+    CommonModule
   ],
   providers: [],
   bootstrap: [AppComponent]

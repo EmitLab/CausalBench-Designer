@@ -194,6 +194,8 @@ export class ApiService {
     "user_id": "1"
   };
 
+  private readonly TASKS_REQUEST_BODY = {};
+
   constructor(
     private http: HttpClient,
     private tokenService: TokenService
@@ -236,9 +238,12 @@ export class ApiService {
     console.log('Sending model request body:', this.MODEL_REQUEST_BODY);
     return this.http.post<any>(`${this.baseUrl}/model_version/fetch`, this.MODEL_REQUEST_BODY, { headers: this.getHeaders() }).pipe(
       map(response => {
-        // Handle YAML format: { success: true, message: "...", status_code: 200, data: { modl_descriptors: [...] } }
         if (response && response.data && response.data.modl_descriptors) {
-          return response.data.modl_descriptors;
+          // Map the response to include task information
+          return response.data.modl_descriptors.map((model: any) => ({
+            ...model,
+            tasks: model.version?.tasks || []
+          }));
         } else {
           console.warn('Unexpected model response format:', response);
           return [];
@@ -256,9 +261,12 @@ export class ApiService {
     console.log('Sending metric request body:', this.METRIC_REQUEST_BODY);
     return this.http.post<any>(`${this.baseUrl}/metric_version/fetch`, this.METRIC_REQUEST_BODY, { headers: this.getHeaders() }).pipe(
       map(response => {
-        // Handle YAML format: { success: true, message: "...", status_code: 200, data: { metric_descriptors: [...] } }
         if (response && response.data && response.data.metric_descriptors) {
-          return response.data.metric_descriptors;
+          // Map the response to include task information
+          return response.data.metric_descriptors.map((metric: any) => ({
+            ...metric,
+            tasks: metric.version?.tasks || []
+          }));
         } else {
           console.warn('Unexpected metric response format:', response);
           return [];
@@ -269,6 +277,24 @@ export class ApiService {
         return of([]);
       })
     );
+  }
+
+  // Get tasks from API - expects { data: { tasks: [...] } }
+  getTasks(): Observable<any[]> {
+    return this.http.post<ApiResponse<any[]>>(`${this.baseUrl}/tasks/fetch`, this.TASKS_REQUEST_BODY, { headers: this.getHeaders() })
+      .pipe(
+        map(response => {
+          if (response.success) {
+            return response.data.map(task => task.task_id);
+          } else {
+            throw new Error(response.message);
+          }
+        }),
+        catchError(error => {
+          console.error('Error fetching tasks:', error);
+          return of([]);
+        })
+      );
   }
 
   // Alternative endpoints if your API uses different paths
