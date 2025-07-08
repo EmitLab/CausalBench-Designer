@@ -124,6 +124,44 @@
       </div>
     </div>
 
+    <!-- Dataset File Mapping Section -->
+    <div class="dataset-files-section" *ngIf="showDatasetFilesSection && selectedType === 'dataset'">
+      <h4>Dataset File Mapping</h4>
+      <p class="files-info">Available files: {{ availableDatasetFiles.length }}</p>
+      
+      <div class="file-mappings">
+        <div class="form-group">
+          <label><b>Data File:</b></label>
+          <select 
+            class="form-control" 
+            [(ngModel)]="selectedDataFile" 
+            (change)="onDataFileSelect()">
+            <option value="">Select data file</option>
+            <option 
+              *ngFor="let file of availableDatasetFiles" 
+              [value]="file.filename">
+              {{ getFileDisplayName(file) }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label><b>Ground Truth File:</b></label>
+          <select 
+            class="form-control" 
+            [(ngModel)]="selectedGroundTruthFile" 
+            (change)="onGroundTruthFileSelect()">
+            <option value="">Select ground truth file</option>
+            <option 
+              *ngFor="let file of availableDatasetFiles" 
+              [value]="file.filename">
+              {{ getFileDisplayName(file) }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <!-- Hyperparameter Section -->
     <div class="hyperparameter-section" *ngIf="showHyperparameterSection">
       <h4>Hyperparameter Configuration</h4>

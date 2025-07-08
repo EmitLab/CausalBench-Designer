@@ -237,7 +237,7 @@ export class AppComponent implements OnInit {
   }
 
   onApplyItem(applyData: any) {
-    const { item, type, id, version, hyperparameterSets } = applyData;
+    const { item, type, id, version, hyperparameterSets, fileMappings } = applyData;
     
     // Check if this item with the same ID and version already exists (excluding the current item)
     if (this.isDuplicateItemExcludingCurrent(type, id, version, item)) {
@@ -256,6 +256,11 @@ export class AppComponent implements OnInit {
           item.data = { ...dataset };
           item.data.selected_version = version;
           item.data.is_new = false;
+          // Add file mappings if provided (similar to hyperparameters)
+          if (fileMappings) {
+            item.data.file_mappings = fileMappings;
+            console.log('Stored file mappings for dataset:', fileMappings);
+          }
           // Update display name
           if (item.getDisplayName) {
             item.getDisplayName = () => versionInfo.dataset.dataset_name;

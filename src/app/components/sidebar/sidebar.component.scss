@@ -409,4 +409,48 @@ textarea.form-control {
   font-size: 11px;
   color: #888;
   margin-left: 4px;
+}
+
+// Dataset Files Section
+.dataset-files-section {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.dataset-files-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.files-info {
+  font-size: 12px;
+  color: #666;
+  margin: 5px 0 15px 0;
+}
+
+.file-mappings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.file-mappings .form-group {
+  margin-bottom: 10px;
+}
+
+.file-mappings label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.file-mappings select {
+  font-size: 13px;
+  padding: 6px 10px;
 } 

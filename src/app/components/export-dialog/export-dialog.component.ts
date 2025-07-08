@@ -102,9 +102,20 @@ export class ExportDialogComponent {
     // Get all datasets (datasets are global)
     for (const item of this.datasets) {
       if (item.data && item.data.dataset_id && item.data.selected_version) {
+        // Use generic file mappings if available, otherwise fall back to defaults
+        let fileMappings = { data: 'file1', ground_truth: 'file2' };
+        
+        if (item.data.file_mappings) {
+          fileMappings = {
+            data: item.data.file_mappings.generic_data || 'file1',
+            ground_truth: item.data.file_mappings.generic_ground_truth || 'file2'
+          };
+        }
+        
         allDatasets.push({
           id: item.data.dataset_id,
-          version: item.data.selected_version
+          version: item.data.selected_version,
+          fileMappings: fileMappings
         });
       }
     }
@@ -130,7 +141,7 @@ export class ExportDialogComponent {
     }
 
     // Format the output
-    let output = `#CausalBench GUI Helper v1.0d. -Kpkc.
+    let output = `#CausalBench GUI Helper v1.0f. -Kpkc.
 from causalbench.modules import Run
 from causalbench.modules.context import Context
 from causalbench.modules.dataset import Dataset
@@ -146,7 +157,8 @@ context1: Context = Context.create(task='${this.selectedTaskType}',
     // Add datasets
     for (let i = 0; i < allDatasets.length; i++) {
       const dataset = allDatasets[i];
-      output += `      (Dataset(module_id=${dataset.id}, version=${dataset.version}), {'data': 'file1', 'ground_truth': 'file2'})`;
+      const fileMapping = `{'data': '${dataset.fileMappings.data}', 'ground_truth': '${dataset.fileMappings.ground_truth}'}`;
+      output += `      (Dataset(module_id=${dataset.id}, version=${dataset.version}), ${fileMapping})`;
       if (i < allDatasets.length - 1) {
         output += ',';
       }

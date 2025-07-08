@@ -52,6 +52,12 @@ export class SidebarComponent {
   hyperparameterSets: any[] = [];
   showHyperparameterSection = false;
 
+  // Dataset file mapping
+  availableDatasetFiles: { filename: string, filetype: string }[] = [];
+  selectedDataFile = '';
+  selectedGroundTruthFile = '';
+  showDatasetFilesSection = false;
+
   // Dropdown options
   datasetOptions: { id: string, name: string }[] = [];
   modelOptions: { id: string, name: string }[] = [];
@@ -155,6 +161,12 @@ export class SidebarComponent {
     this.availableHyperparameters = [];
     this.hyperparameterSets = [];
     this.showHyperparameterSection = false;
+    
+    // Clear dataset file mapping section
+    this.availableDatasetFiles = [];
+    this.selectedDataFile = '';
+    this.selectedGroundTruthFile = '';
+    this.showDatasetFilesSection = false;
   }
 
   showPlaceholder() {
@@ -168,6 +180,12 @@ export class SidebarComponent {
     this.availableHyperparameters = [];
     this.hyperparameterSets = [];
     this.showHyperparameterSection = false;
+    
+    // Clear dataset file mapping section
+    this.availableDatasetFiles = [];
+    this.selectedDataFile = '';
+    this.selectedGroundTruthFile = '';
+    this.showDatasetFilesSection = false;
   }
 
   populateDatasetFields(item: any) {
@@ -407,8 +425,98 @@ export class SidebarComponent {
         this.itemVisibility = versionInfo.metadata.visibility;
         this.itemUrl = versionInfo.metadata.url;
         this.itemTimestamp = versionInfo.metadata.upload_timestamp;
+        
+        // Load dataset files for mapping
+        this.loadDatasetFiles(versionInfo);
       }
     }
+  }
+
+  loadDatasetFiles(versionInfo: any) {
+    console.log('loadDatasetFiles called for dataset');
+    this.availableDatasetFiles = [];
+    this.showDatasetFilesSection = false;
+    
+    // Only show dataset file mapping section for dataset items
+    if (this.selectedType !== 'dataset') {
+      console.log('Not a dataset item, hiding file mapping section');
+      return;
+    }
+    
+    // Extract files from features - each feature has file_name and file_type
+    if (versionInfo.version && versionInfo.version.features) {
+      console.log('Extracting files from features...');
+      const uniqueFiles = new Map<string, { filename: string, filetype: string }>();
+      
+      versionInfo.version.features.forEach((feature: any, index: number) => {
+        if (feature.file_name && feature.file_type) {
+          const key = `${feature.file_name}__${feature.file_type}`;
+          uniqueFiles.set(key, {
+            filename: feature.file_name,
+            filetype: feature.file_type
+          });
+          console.log(`Found file: ${feature.file_name} (type: ${feature.file_type})`);
+        }
+      });
+      
+      this.availableDatasetFiles = Array.from(uniqueFiles.values());
+      this.showDatasetFilesSection = this.availableDatasetFiles.length > 0;
+      
+      console.log(`Extracted ${this.availableDatasetFiles.length} unique files from features`);
+      console.log('Available files:', this.availableDatasetFiles);
+    } else {
+      console.log('No version or features found in dataset');
+    }
+    
+    console.log('Dataset file mapping section enabled:', this.showDatasetFilesSection);
+    
+    // Load existing file mappings if they exist
+    this.loadExistingFileMappings();
+  }
+
+  loadExistingFileMappings() {
+    // Reset selections
+    this.selectedDataFile = '';
+    this.selectedGroundTruthFile = '';
+    
+    // Load existing mappings if they exist in the current item
+    if (this.currentItem && 
+        this.currentItem.data && 
+        this.currentItem.data.file_mappings) {
+      this.selectedDataFile = this.currentItem.data.file_mappings.data || '';
+      this.selectedGroundTruthFile = this.currentItem.data.file_mappings.ground_truth || '';
+      console.log('Loaded existing file mappings:', {
+        data: this.selectedDataFile,
+        ground_truth: this.selectedGroundTruthFile
+      });
+    }
+  }
+
+  onDataFileSelect() {
+    console.log('Data file selected:', this.selectedDataFile);
+    // Note: File mappings are stored in component properties only
+    // They will be persisted when user clicks Apply, similar to hyperparameters
+  }
+
+  onGroundTruthFileSelect() {
+    console.log('Ground truth file selected:', this.selectedGroundTruthFile);
+    // Note: File mappings are stored in component properties only  
+    // They will be persisted when user clicks Apply, similar to hyperparameters
+  }
+
+  getFileDisplayName(file: { filename: string, filetype: string }): string {
+    return `${file.filename} (${file.filetype})`;
+  }
+
+  getGenericFileName(filename: string): string {
+    if (!filename) return '';
+    
+    // Find the selected file object to get its type
+    const selectedFile = this.availableDatasetFiles.find(f => f.filename === filename);
+    if (!selectedFile) return filename;
+    
+    // The file type from the API is already in generic format (file1, file2, etc.)
+    return selectedFile.filetype;
   }
 
   updateModelInfo() {
@@ -447,13 +555,26 @@ export class SidebarComponent {
 
   onApplyItem() {
     if (this.currentItem && this.selectedId && this.selectedVersion) {
-      const applyData = {
+      const applyData: any = {
         item: this.currentItem,
         type: this.selectedType,
         id: this.selectedId,
         version: this.selectedVersion,
         hyperparameterSets: this.hyperparameterSets
       };
+      
+      // Add file mappings for datasets (following hyperparameter pattern)
+      if (this.selectedType === 'dataset' && this.showDatasetFilesSection) {
+        applyData.fileMappings = {
+          data: this.selectedDataFile,
+          ground_truth: this.selectedGroundTruthFile,
+          // Also store generic names for export
+          generic_data: this.getGenericFileName(this.selectedDataFile),
+          generic_ground_truth: this.getGenericFileName(this.selectedGroundTruthFile)
+        };
+        console.log('Including file mappings in apply data:', applyData.fileMappings);
+      }
+      
       this.applyItem.emit(applyData);
     }
   }
