@@ -109,20 +109,24 @@ export class ExportDialogComponent {
       }
     }
 
-    // Get filtered models
+    // Get filtered models with hyperparameters
     for (const item of this.getFilteredModels()) {
-      allModels.push({
+      const modelData = {
         id: item.data.modl_id,
-        version: item.data.selected_version
-      });
+        version: item.data.selected_version,
+        hyperparameterSets: item.data.hyperparameter_sets || []
+      };
+      allModels.push(modelData);
     }
 
-    // Get filtered metrics
+    // Get filtered metrics with hyperparameters
     for (const item of this.getFilteredMetrics()) {
-      allMetrics.push({
+      const metricData = {
         id: item.data.metric_id,
-        version: item.data.selected_version
-      });
+        version: item.data.selected_version,
+        hyperparameterSets: item.data.hyperparameter_sets || []
+      };
+      allMetrics.push(metricData);
     }
 
     // Format the output
@@ -151,25 +155,61 @@ context1: Context = Context.create(task='${this.selectedTaskType}',
 
     output += '   ],\n   models=[';
 
-    // Add models
-    for (let i = 0; i < allModels.length; i++) {
-      const model = allModels[i];
-      output += `(Model(module_id=${model.id}, version=${model.version}), {})`;
-      if (i < allModels.length - 1) {
-        output += ', ';
+    // Add models with hyperparameters
+    const modelEntries = [];
+    for (const model of allModels) {
+      // If model has hyperparameter sets, create entries for each set
+      if (model.hyperparameterSets && model.hyperparameterSets.length > 0) {
+        for (const hyperparamSet of model.hyperparameterSets) {
+          // Format hyperparameters
+          const hyperparamEntries = [];
+          for (const [paramName, paramValue] of Object.entries(hyperparamSet.parameters)) {
+            if (paramValue !== undefined && paramValue !== null && paramValue !== '') {
+              hyperparamEntries.push(`'${paramName}': '${paramValue}'`);
+            }
+          }
+          
+          const hyperparamConfig = hyperparamEntries.length > 0 ? 
+            `{${hyperparamEntries.join(', ')}}` : '{}';
+          
+          modelEntries.push(`(Model(module_id=${model.id}, version=${model.version}), ${hyperparamConfig})`);
+        }
+      } else {
+        // No hyperparameters defined
+        modelEntries.push(`(Model(module_id=${model.id}, version=${model.version}), {})`);
       }
     }
+    
+    output += modelEntries.join(', ');
 
     output += '],\n   metrics=[';
 
-    // Add metrics
-    for (let i = 0; i < allMetrics.length; i++) {
-      const metric = allMetrics[i];
-      output += `(Metric(module_id=${metric.id}, version=${metric.version}), {})`;
-      if (i < allMetrics.length - 1) {
-        output += ', ';
+    // Add metrics with hyperparameters
+    const metricEntries = [];
+    for (const metric of allMetrics) {
+      // If metric has hyperparameter sets, create entries for each set
+      if (metric.hyperparameterSets && metric.hyperparameterSets.length > 0) {
+        for (const hyperparamSet of metric.hyperparameterSets) {
+          // Format hyperparameters
+          const hyperparamEntries = [];
+          for (const [paramName, paramValue] of Object.entries(hyperparamSet.parameters)) {
+            if (paramValue !== undefined && paramValue !== null && paramValue !== '') {
+              hyperparamEntries.push(`'${paramName}': '${paramValue}'`);
+            }
+          }
+          
+          const hyperparamConfig = hyperparamEntries.length > 0 ? 
+            `{${hyperparamEntries.join(', ')}}` : '{}';
+          
+          metricEntries.push(`(Metric(module_id=${metric.id}, version=${metric.version}), ${hyperparamConfig})`);
+        }
+      } else {
+        // No hyperparameters defined
+        metricEntries.push(`(Metric(module_id=${metric.id}, version=${metric.version}), {})`);
       }
     }
+    
+    output += metricEntries.join(', ');
 
     output += `])
 
