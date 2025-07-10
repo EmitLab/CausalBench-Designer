@@ -16,7 +16,7 @@ export class TokenService {
     if (!this.token) {
       // When the app loads, ask for token from opener
       try {
-        window.opener?.postMessage('ready-for-token', 'https://causalbench.org');
+        window.opener.postMessage('ready-for-token', 'https://causalbench.org');
       }
       catch (err) {
         window.open('https://causalbench.org', '_self');
