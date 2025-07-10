@@ -10,12 +10,14 @@ export class TokenService {
     this.loadToken();
 
     if (!this.token) {
-      window.open('https://causalbench.org', '_self');
+      // window.open('https://causalbench.org', '_self');
     }
   }
 
   private loadToken() {
     this.token = sessionStorage.getItem('token') || '';
+
+    console.log(window.opener);
     
     if (!this.token) {
       // When the app loads, ask for token from opener
