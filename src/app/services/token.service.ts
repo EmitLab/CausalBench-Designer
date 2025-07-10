@@ -8,10 +8,6 @@ export class TokenService {
 
   constructor() {
     this.loadToken();
-
-    if (!this.token) {
-      // window.open('https://causalbench.org', '_self');
-    }
   }
 
   private loadToken() {
@@ -21,25 +17,23 @@ export class TokenService {
       // When the app loads, ask for token from opener
       if (window.opener) {
         window.opener.postMessage('ready-for-token', 'https://causalbench.org');
+        
+        // Listen for the token from parent
+        window.addEventListener('message', event => {
+          if (event.origin !== 'https://causalbench.org') return;
+
+          const token = event.data?.token;
+          if (token) {
+            sessionStorage.setItem('token', token);
+          }
+          else {
+            window.open('https://causalbench.org', '_self');
+          }
+        });
       }
-
-      console.log('Opener window:');
-      console.log(window.opener);
-
-      // Listen for the token from parent
-      window.addEventListener('message', event => {
-        console.log('Received message from parent window:');
-        console.log(event);
-        console.log(event.origin);
-
-        if (event.origin !== 'https://causalbench.org') return;
-
-        const token = event.data?.token;
-        if (token) {
-          sessionStorage.setItem('token', token);
-          // Optionally trigger login or route transition
-        }
-      });
+      else {
+        window.open('https://causalbench.org', '_self');
+      }
     }
   }
 
