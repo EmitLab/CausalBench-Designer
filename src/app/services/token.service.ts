@@ -19,20 +19,21 @@ export class TokenService {
         window.open('https://causalbench.org', '_self');
       }
 
+      console.log(window.opener.location.origin);
+
       // When the app loads, ask for token from opener
-      window.opener.postMessage('ready-for-token', 'https://causalbench.org');
+      window.opener.postMessage('ready-for-token', '*');
 
       // Fallback timeout to redirect if no response
-      let timeout = setTimeout(() => {
-        window.open('https://causalbench.org', '_self');
-        console.error('No token received from parent window within 1 second. Redirecting to CausalBench.');
-      }, 1000);
+      // let timeout = setTimeout(() => {
+      //   window.open('https://causalbench.org', '_self');
+      // }, 1000);
       
       // Listen for the token from parent
       window.addEventListener('message', event => {
         console.log('Received message from parent window:');
         // Token received from parent window
-        clearTimeout(timeout);
+        // clearTimeout(timeout);
 
         // Ensure the message is from the expected origin
         if (event.origin !== 'https://causalbench.org') {
@@ -50,8 +51,6 @@ export class TokenService {
         // Store the token
         sessionStorage.setItem('token', token);
       });
-
-
     }
   }
 
