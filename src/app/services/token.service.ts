@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -8,25 +7,32 @@ export class TokenService {
   private token: string = '';
 
   constructor() {
-    this.loadTokenFromFile();
-  }
+    this.loadToken();
 
-  private loadTokenFromFile() {
-    // For web applications, we can't directly read files from the desktop
-    // We'll provide a way to manually input the token or use localStorage
-    this.token = sessionStorage.getItem('auth_token') || '';
-    
     if (!this.token) {
-      // Prompt user to input token if not found
-      this.promptForToken();
+      window.open('https://causalbench.org', '_self');
     }
   }
 
-  private promptForToken() {
-    const token = prompt('Please enter your authorization token:');
-    if (token) {
-      this.token = token;
-      sessionStorage.setItem('auth_token', token);
+  private loadToken() {
+    this.token = sessionStorage.getItem('token') || '';
+    
+    if (!this.token) {
+      // When the app loads, ask for token from opener
+      if (window.opener) {
+        window.opener.postMessage('ready-for-token', 'https://causalbench.org');
+      }
+
+      // Listen for the token from parent
+      window.addEventListener('message', event => {
+        if (event.origin !== 'https://causalbench.org') return;
+
+        const token = event.data?.token;
+        if (token) {
+          sessionStorage.setItem('token', token);
+          // Optionally trigger login or route transition
+        }
+      });
     }
   }
 
@@ -47,4 +53,5 @@ export class TokenService {
   hasToken(): boolean {
     return !!this.token;
   }
-} 
+
+}
