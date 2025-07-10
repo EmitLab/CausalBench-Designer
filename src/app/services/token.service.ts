@@ -10,7 +10,7 @@ export class TokenService {
     this.loadToken();
 
     if (!this.token) {
-      window.open('https://causalbench.org', '_self');
+      // window.open('https://causalbench.org', '_self');
     }
   }
 
