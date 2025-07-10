@@ -4,7 +4,7 @@
 .app-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 3rem - 2px);
+  height: calc(100vh - 4.5rem);
   background-color: #f5f5f5;
 }
 
@@ -120,18 +120,18 @@ app-metric-view {
 .title-bar {
   display: flex;
   align-items: center;
-  height: 3rem;
-  background: #222;
-  border-bottom: 2px solid #111;
-  padding: 0 1.5rem;
+  height: 4.5rem;
+  background-color: #424242;
+  padding: 0 1rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.03);
   z-index: 1001;
 }
 
 .logo {
-  height: 2.2rem;
+  height: 3rem;
   width: auto;
   margin-right: 1rem;
+  margin-top: 3px;
 }
 
 .app-title {
@@ -163,7 +163,7 @@ app-metric-view {
   color: #fff;
 }
 
-.title-bar .help-btn:first-of-type {
+.title-bar .help-btn {
   margin-left: auto;
 }
 
