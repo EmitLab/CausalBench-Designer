@@ -25,6 +25,9 @@ export class TokenService {
       // Listen for the token from parent
       let responded = false;
       window.addEventListener('message', event => {
+        console.log('Received message from parent window:');
+        console.log(event);
+
         responded = true;
 
         // Ensure the message is from the expected origin
