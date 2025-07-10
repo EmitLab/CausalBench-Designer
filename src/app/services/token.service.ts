@@ -21,14 +21,18 @@ export class TokenService {
 
       // When the app loads, ask for token from opener
       window.opener.postMessage('ready-for-token', 'https://causalbench.org');
+
+      // Fallback timeout to redirect if no response
+      let timeout = setTimeout(() => {
+        window.open('https://causalbench.org', '_self');
+        console.error('No token received from parent window within 1 second. Redirecting to CausalBench.');
+      }, 1000);
       
       // Listen for the token from parent
-      let responded = false;
       window.addEventListener('message', event => {
         console.log('Received message from parent window:');
-        console.log(event);
-
-        responded = true;
+        // Token received from parent window
+        clearTimeout(timeout);
 
         // Ensure the message is from the expected origin
         if (event.origin !== 'https://causalbench.org') {
@@ -47,12 +51,7 @@ export class TokenService {
         sessionStorage.setItem('token', token);
       });
 
-      // Wait for response, then redirect if no response
-      setTimeout(() => {
-        if (!responded) {
-          window.open('https://causalbench.org', '_self');
-        }
-      }, 1000);
+
     }
   }
 
