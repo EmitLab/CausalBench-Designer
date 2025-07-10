@@ -26,7 +26,7 @@ export class TokenService {
       }
 
       // When the app loads, ask for token from opener
-      window.opener.postMessage('ready-for-token', 'https://causalbench.org');
+      window.opener.postMessage('ready-for-token', '*');
 
       // Fallback timeout to redirect if no response
       let timeout = setTimeout(() => {
@@ -39,7 +39,7 @@ export class TokenService {
         clearTimeout(timeout);
 
         // Ensure the message is from the expected origin
-        if (event.origin !== 'https://causalbench.org') {
+        if (event.origin !== 'https://causalbench.org' && event.origin !== 'https://www.causalbench.org') {
           window.open('https://causalbench.org', '_self');
         }
 
