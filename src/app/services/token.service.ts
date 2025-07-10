@@ -14,31 +14,42 @@ export class TokenService {
     this.token = sessionStorage.getItem('token') || '';
     
     if (!this.token) {
-      // When the app loads, ask for token from opener
-      try {
-        window.opener.postMessage('ready-for-token', 'https://causalbench.org');
-      }
-      catch (err) {
+      // Check if the window has an opener
+      if (!window.opener) {
         window.open('https://causalbench.org', '_self');
       }
+
+      // When the app loads, ask for token from opener
+      window.opener.postMessage('ready-for-token', 'https://causalbench.org');
       
       // Listen for the token from parent
+      let responded = false;
       window.addEventListener('message', event => {
+        responded = true;
+
+        // Ensure the message is from the expected origin
         if (event.origin !== 'https://causalbench.org') {
           window.open('https://causalbench.org', '_self');
         }
 
+        // Obtain the token from the event data
         const token = event.data?.token;
-        if (token) {
-          sessionStorage.setItem('token', token);
-        }
-        else {
+
+        // Ensure that a token was received
+        if (!token) {
           window.open('https://causalbench.org', '_self');
         }
+        
+        // Store the token
+        sessionStorage.setItem('token', token);
       });
-    }
-    else {
-      window.open('https://causalbench.org', '_self');
+
+      // Wait for response, then redirect if no response
+      setTimeout(() => {
+        if (!responded) {
+          window.open('https://causalbench.org', '_self');
+        }
+      }, 1000);
     }
   }
 
