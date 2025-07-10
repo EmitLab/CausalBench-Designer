@@ -141,7 +141,7 @@ export class ExportDialogComponent {
     }
 
     // Format the output
-    let output = `#CausalBench GUI Helper v1.0f. -Kpkc.
+    let output = `# Created using CausalBench Designer v1.0g
 from causalbench.modules import Run
 from causalbench.modules.context import Context
 from causalbench.modules.dataset import Dataset
