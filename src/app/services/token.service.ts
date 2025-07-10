@@ -25,6 +25,7 @@ export class TokenService {
 
       // Listen for the token from parent
       window.addEventListener('message', event => {
+        console.log(event.origin);
         if (event.origin !== 'https://causalbench.org') return;
 
         const token = event.data?.token;
