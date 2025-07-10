@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from './services/api.service';
+import { TokenService } from './services/token.service';
 
 @Component({
   selector: 'app-root',
@@ -30,56 +31,61 @@ export class AppComponent implements OnInit {
   // Export dialog state
   showExportDialog = false;
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private tokenService: TokenService
+  ) { }
 
   ngOnInit() {
     this.loadAvailableData();
   }
 
   loadAvailableData() {
-    // Load available datasets from API with default request body
-    this.loadingDatasets = true;
-    this.apiService.getDatasets().subscribe({
-      next: (data) => {
-        this.availableDatasets = data;
-        console.log('Available datasets loaded:', data);
-        this.loadingDatasets = false;
-      },
-      error: (error) => {
-        console.error('Error loading datasets:', error);
-        this.loadingDatasets = false;
-        // Fallback to mock data or show error message
-      }
-    });
-    
-    // Load available models from API with default request body
-    this.loadingModels = true;
-    this.apiService.getModels().subscribe({
-      next: (data) => {
-        this.availableModels = data;
-        console.log('Available models loaded:', data);
-        this.loadingModels = false;
-      },
-      error: (error) => {
-        console.error('Error loading models:', error);
-        this.loadingModels = false;
-        // Fallback to mock data or show error message
-      }
-    });
-    
-    // Load available metrics from API with default request body
-    this.loadingMetrics = true;
-    this.apiService.getMetrics().subscribe({
-      next: (data) => {
-        this.availableMetrics = data;
-        console.log('Available metrics loaded:', data);
-        this.loadingMetrics = false;
-      },
-      error: (error) => {
-        console.error('Error loading metrics:', error);
-        this.loadingMetrics = false;
-        // Fallback to mock data or show error message
-      }
+    this.tokenService.token$.subscribe(token => {
+      // Load available datasets from API with default request body
+      this.loadingDatasets = true;
+      this.apiService.getDatasets(token).subscribe({
+        next: (data) => {
+          this.availableDatasets = data;
+          console.log('Available datasets loaded:', data);
+          this.loadingDatasets = false;
+        },
+        error: (error) => {
+          console.error('Error loading datasets:', error);
+          this.loadingDatasets = false;
+          // Fallback to mock data or show error message
+        }
+      });
+      
+      // Load available models from API with default request body
+      this.loadingModels = true;
+      this.apiService.getModels(token).subscribe({
+        next: (data) => {
+          this.availableModels = data;
+          console.log('Available models loaded:', data);
+          this.loadingModels = false;
+        },
+        error: (error) => {
+          console.error('Error loading models:', error);
+          this.loadingModels = false;
+          // Fallback to mock data or show error message
+        }
+      });
+      
+      // Load available metrics from API with default request body
+      this.loadingMetrics = true;
+      this.apiService.getMetrics(token).subscribe({
+        next: (data) => {
+          this.availableMetrics = data;
+          console.log('Available metrics loaded:', data);
+          this.loadingMetrics = false;
+        },
+        error: (error) => {
+          console.error('Error loading metrics:', error);
+          this.loadingMetrics = false;
+          // Fallback to mock data or show error message
+        }
+      });
     });
   }
 

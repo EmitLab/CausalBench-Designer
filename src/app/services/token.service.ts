@@ -1,26 +1,32 @@
 import { Injectable } from '@angular/core';
+import { ReplaySubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TokenService {
-  private token: string = '';
+
+  token$ = new ReplaySubject<string>(1);
 
   constructor() {
     this.loadToken();
   }
 
   private loadToken() {
-    this.token = sessionStorage.getItem('token') || '';
+    let token = sessionStorage.getItem('token') || '';
     
-    if (!this.token) {
+    if (token) {
+      // If token exists in session storage, set it immediately
+      this.setToken(token);
+    }
+    else {
       // Check if the window has an opener
       if (!window.opener) {
         window.open('https://causalbench.org', '_self');
       }
 
       // When the app loads, ask for token from opener
-      window.opener.postMessage('ready-for-token', '*');
+      window.opener.postMessage('ready-for-token', 'https://causalbench.org');
 
       // Fallback timeout to redirect if no response
       let timeout = setTimeout(() => {
@@ -33,8 +39,7 @@ export class TokenService {
         clearTimeout(timeout);
 
         // Ensure the message is from the expected origin
-        console.log('Parent:', event.origin);
-        if (event.origin !== 'https://causalbench.org' && event.origin !== 'https://www.causalbench.org') {
+        if (event.origin !== 'https://causalbench.org') {
           window.open('https://causalbench.org', '_self');
         }
 
@@ -47,27 +52,18 @@ export class TokenService {
         }
         
         // Store the token
-        sessionStorage.setItem('token', token);
+        this.setToken(token);
       });
     }
   }
 
-  getToken(): string {
-    return this.token;
-  }
-
   setToken(token: string) {
-    this.token = token;
-    sessionStorage.setItem('auth_token', token);
-  }
-
-  clearToken() {
-    this.token = '';
-    sessionStorage.removeItem('auth_token');
+    sessionStorage.setItem('token', token);
+    this.token$.next(token);
   }
 
   hasToken(): boolean {
-    return !!this.token;
+    return sessionStorage.getItem('token') !== null;
   }
 
 }

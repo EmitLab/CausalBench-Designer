@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, map, of } from 'rxjs';
-import { TokenService } from './token.service';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -197,13 +196,11 @@ export class ApiService {
   private readonly TASKS_REQUEST_BODY = {};
 
   constructor(
-    private http: HttpClient,
-    private tokenService: TokenService
+    private http: HttpClient
   ) { }
 
   // Get headers with dynamic token
-  private getHeaders(): HttpHeaders {
-    const token = this.tokenService.getToken();
+  private getHeaders(token: string): HttpHeaders {
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Accept': '*/*',
@@ -214,9 +211,9 @@ export class ApiService {
   }
 
   // Get datasets from API - expects YAML format: { data: { dataset_descriptors: [...] } }
-  getDatasets(): Observable<any[]> {
+  getDatasets(token: string): Observable<any[]> {
     console.log('Sending dataset request body:', this.DATASET_REQUEST_BODY);
-    return this.http.post<any>(`${this.baseUrl}/dataset_version/fetch`, this.DATASET_REQUEST_BODY, { headers: this.getHeaders() }).pipe(
+    return this.http.post<any>(`${this.baseUrl}/dataset_version/fetch`, this.DATASET_REQUEST_BODY, { headers: this.getHeaders(token) }).pipe(
       map(response => {
         // Handle YAML format: { success: true, message: "...", status_code: 200, data: { dataset_descriptors: [...] } }
         if (response && response.data && response.data.dataset_descriptors) {
@@ -234,9 +231,9 @@ export class ApiService {
   }
 
   // Get models from API - expects YAML format: { data: { modl_descriptors: [...] } }
-  getModels(): Observable<any[]> {
+  getModels(token: string): Observable<any[]> {
     console.log('Sending model request body:', this.MODEL_REQUEST_BODY);
-    return this.http.post<any>(`${this.baseUrl}/model_version/fetch`, this.MODEL_REQUEST_BODY, { headers: this.getHeaders() }).pipe(
+    return this.http.post<any>(`${this.baseUrl}/model_version/fetch`, this.MODEL_REQUEST_BODY, { headers: this.getHeaders(token) }).pipe(
       map(response => {
         if (response && response.data && response.data.modl_descriptors) {
           // Map the response to include task information
@@ -257,9 +254,9 @@ export class ApiService {
   }
 
   // Get metrics from API - expects YAML format: { data: { metric_descriptors: [...] } }
-  getMetrics(): Observable<any[]> {
+  getMetrics(token: string): Observable<any[]> {
     console.log('Sending metric request body:', this.METRIC_REQUEST_BODY);
-    return this.http.post<any>(`${this.baseUrl}/metric_version/fetch`, this.METRIC_REQUEST_BODY, { headers: this.getHeaders() }).pipe(
+    return this.http.post<any>(`${this.baseUrl}/metric_version/fetch`, this.METRIC_REQUEST_BODY, { headers: this.getHeaders(token) }).pipe(
       map(response => {
         if (response && response.data && response.data.metric_descriptors) {
           // Map the response to include task information
@@ -280,8 +277,8 @@ export class ApiService {
   }
 
   // Get tasks from API - expects { data: { tasks: [...] } }
-  getTasks(): Observable<any[]> {
-    return this.http.post<ApiResponse<any[]>>(`${this.baseUrl}/tasks/fetch`, this.TASKS_REQUEST_BODY, { headers: this.getHeaders() })
+  getTasks(token: string): Observable<any[]> {
+    return this.http.post<ApiResponse<any[]>>(`${this.baseUrl}/tasks/fetch`, this.TASKS_REQUEST_BODY, { headers: this.getHeaders(token) })
       .pipe(
         map(response => {
           if (response.success) {

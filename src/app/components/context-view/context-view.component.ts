@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { ApiService } from '../../services/api.service';
+import { TokenService } from '../../services/token.service';
 
 @Component({
   selector: 'app-context-view',
@@ -22,7 +23,10 @@ export class ContextViewComponent implements OnInit {
   @Output() addMetric = new EventEmitter<void>();
   @Output() taskTypeChange = new EventEmitter<string>();
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private tokenService: TokenService
+  ) { }
 
   ngOnInit() {
     this.fetchTasks();
@@ -79,16 +83,18 @@ export class ContextViewComponent implements OnInit {
   }
 
   fetchTasks() {
-    this.loadingTasks = true;
-    this.apiService.getTasks().subscribe({
-      next: (tasks: string[]) => {
-        this.tasks = tasks;
-        this.loadingTasks = false;
-      },
-      error: (error) => {
-        console.error('Error fetching tasks:', error);
-        this.loadingTasks = false;
-      }
+    this.tokenService.token$.subscribe(token => {
+      this.loadingTasks = true;
+      this.apiService.getTasks(token).subscribe({
+        next: (tasks: string[]) => {
+          this.tasks = tasks;
+          this.loadingTasks = false;
+        },
+        error: (error) => {
+          console.error('Error fetching tasks:', error);
+          this.loadingTasks = false;
+        }
+      });
     });
   }
 
