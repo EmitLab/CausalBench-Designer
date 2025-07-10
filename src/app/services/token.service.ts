@@ -33,7 +33,8 @@ export class TokenService {
         clearTimeout(timeout);
 
         // Ensure the message is from the expected origin
-        if (event.origin !== 'https://causalbench.org') {
+        console.log('Parent:', event.origin);
+        if (event.origin !== 'https://causalbench.org' && event.origin !== 'https://www.causalbench.org') {
           window.open('https://causalbench.org', '_self');
         }
 
