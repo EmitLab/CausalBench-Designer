@@ -262,18 +262,21 @@ export class SidebarComponent {
       const dataset = this.availableDatasets.find(d => String(d.dataset_id) === this.selectedId);
       if (dataset && dataset.dataset_version_info_list) {
         this.versions = dataset.dataset_version_info_list.map((v: any) => String(v.version.version_number));
+        this.versions.reverse();
         console.log('Dataset versions found:', this.versions);
       }
     } else if (this.selectedType === 'model') {
       const model = this.availableModels.find(m => String(m.modl_id) === this.selectedId);
       if (model && model.modl_version_info_list) {
         this.versions = model.modl_version_info_list.map((v: any) => String(v.version.version_number));
+        this.versions.reverse();
         console.log('Model versions found:', this.versions);
       }
     } else if (this.selectedType === 'metric') {
       const metric = this.availableMetrics.find(m => String(m.metric_id) === this.selectedId);
       if (metric && metric.metric_version_info_list) {
         this.versions = metric.metric_version_info_list.map((v: any) => String(v.version.version_number));
+        this.versions.reverse();
         console.log('Metric versions found:', this.versions);
       }
     }
