@@ -175,9 +175,14 @@ context1: Context = Context.create(task='${this.selectedTaskType}',
         for (const hyperparamSet of model.hyperparameterSets) {
           // Format hyperparameters
           const hyperparamEntries = [];
-          for (const [paramName, paramValue] of Object.entries(hyperparamSet.parameters)) {
-            if (paramValue !== undefined && paramValue !== null && paramValue !== '') {
-              hyperparamEntries.push(`'${paramName}': '${paramValue}'`);
+          for (const [paramName, paramValue] of Object.entries(hyperparamSet.parameters as Record<string, {value: any, data_type: string}>)) {
+            if (paramValue !== undefined && paramValue !== null && paramValue.value !== '') {
+              if (paramValue.data_type == 'string') {
+                hyperparamEntries.push(`'${paramName}': '${paramValue.value}'`);
+              }
+              else {
+                hyperparamEntries.push(`'${paramName}': ${paramValue.value}`);
+              }
             }
           }
           

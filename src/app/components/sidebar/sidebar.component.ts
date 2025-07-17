@@ -396,7 +396,13 @@ export class SidebarComponent {
   updateHyperparameterValue(setId: number, parameterName: string, value: string) {
     const set = this.hyperparameterSets.find(s => s.id === setId);
     if (set) {
-      set.parameters[parameterName] = value;
+      const param = this.availableHyperparameters.find(p => p.hyperparameter_name === parameterName);
+      if (param) {
+        set.parameters[parameterName] = {
+          value: value,
+          data_type: param.hyperparameter_data_type
+        };
+      }
     }
   }
 
@@ -411,7 +417,7 @@ export class SidebarComponent {
     return this.hyperparameterSets.some(set => 
       set.id !== setId && 
       set.parameters[parameterName] && 
-      set.parameters[parameterName] === value
+      set.parameters[parameterName].value === value
     );
   }
 
@@ -765,7 +771,10 @@ export class SidebarComponent {
     if (set) {
       const param = this.availableHyperparameters.find(p => p.hyperparameter_name === paramName);
       if (param) {
-        set.parameters[paramName] = param.hyperparameter_value;
+        set.parameters[paramName] = {
+          value: param.hyperparameter_value,
+          data_type: param.hyperparameter_data_type
+        };
       }
     }
   }

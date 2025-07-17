@@ -197,9 +197,9 @@
                   type="text" 
                   class="form-control" 
                   [placeholder]="param.hyperparameter_value"
-                  [value]="set.parameters[param.hyperparameter_name] || ''"
+                  [value]="set.parameters[param.hyperparameter_name]?.value || ''"
                   (input)="onHyperparameterInput($event, set.id, param.hyperparameter_name)"
-                  [class.duplicate]="isDuplicateHyperparameter(set.id, param.hyperparameter_name, set.parameters[param.hyperparameter_name])"
+                  [class.duplicate]="isDuplicateHyperparameter(set.id, param.hyperparameter_name, set.parameters[param.hyperparameter_name]?.value)"
                 >
                 <button class="btn btn-xs btn-reset" type="button" (click)="resetHyperparameterToDefault(set.id, param.hyperparameter_name)" title="Reset to default">
                   &#8635;
